@@ -1,25 +1,32 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
-function PostDetails() {
+
+const PostDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+
+  const blog = blogs.find((post) => post.id === Number(id));
+
+  if (!blog) {
+    return <h2 style={{ textAlign: "center" }}>Blog not found</h2>;
+  }
 
   return (
-    <section className="post-container">
-      <h1>Blog Post {id}</h1>
+    <div className="post-details-container">
+      <h1>{blog.title}</h1>
+      <p className="post-category">{blog.category}</p>
 
-      <p className="post-text">
-        This is where your full blog content will appear.
-        Clean typography for a calm reading experience.
-      </p>
-
-      {/* BUTTON AREA */}
-      <div className="post-actions">
-        <Link to="/" className="primary-btn">
-          BACK TO HOME
-        </Link>
+      <div className="post-content">
+        {blog.content.split("\n").map((line, index) => (
+          <p key={index}>{line}</p>
+        ))}
       </div>
-    </section>
+
+      <button onClick={() => navigate("/")}>
+        BACK TO HOME
+      </button>
+    </div>
   );
-}
+};
 
 export default PostDetails;
