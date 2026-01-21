@@ -1,15 +1,47 @@
+// Lifestyle.jsx
+// Fetch posts and filter by category "lifestyle".
+
+import { useEffect, useState } from "react";
 import PostList from "../components/PostList";
 
-const lifestylePosts = [
-  { id: 1, title: "Finding beauty in simple days" },
-  { id: 2, title: "Morning routines that calm the mind" },
-];
-
 function Lifestyle() {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    setError(null);
+
+    fetch("http://localhost:8000/api/posts")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch posts");
+        return res.json();
+      })
+      .then((data) => {
+        if (!mounted) return;
+        const list = Array.isArray(data) ? data : [];
+        setPosts(list.filter((p) => String(p.category).toLowerCase() === "lifestyle"));
+      })
+      .catch((err) => {
+        if (mounted) setError(err.message || "Unknown error");
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   return (
-    
-      <PostList posts={lifestylePosts} />
-    
+    <>
+      {loading && <p className="loading">Loading lifestyle posts…</p>}
+      {error && <p className="error">Error: {error}</p>}
+      {!loading && !error && <PostList posts={posts} />}
+    </>
   );
 }
 

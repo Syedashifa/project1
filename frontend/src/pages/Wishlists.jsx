@@ -1,15 +1,49 @@
+// Wishlists.jsx
+// Fetch posts and filter for wishlist-related categories.
+
+import { useEffect, useState } from "react";
 import PostList from "../components/PostList";
 
-const wishlistPosts = [
-  { id: 5, title: "Things I want to do this year" },
-  { id: 6, title: "Books and places on my wishlist" },
-];
-
 function Wishlists() {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    setError(null);
+
+    fetch("http://localhost:8000/api/posts")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch posts");
+        return res.json();
+      })
+      .then((data) => {
+        if (!mounted) return;
+        const list = Array.isArray(data) ? data : [];
+        setPosts(list.filter((p) =>
+          String(p.category).toLowerCase().includes("wish")
+        ));
+      })
+      .catch((err) => {
+        if (mounted) setError(err.message || "Unknown error");
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   return (
-    
-      <PostList posts={wishlistPosts} />
-    
+    <>
+      {loading && <p className="loading">Loading wishlist posts…</p>}
+      {error && <p className="error">Error: {error}</p>}
+      {!loading && !error && <PostList posts={posts} />}
+    </>
   );
 }
 
